@@ -24,7 +24,7 @@ pub fn calculate_total_reward(blocks_mined: u64) -> f64 {
 /// Return true if the transaction fee is between 0.00001 and 0.01 BTC.
 pub fn is_valid_tx_fee(fee: f64) -> bool {
     // TODO: Check if fee is between 0.00001 and 0.01 BTC (inclusive)
-    fee >= 0.00001 && fee <= 0.01
+    (0.00001..=0.01).contains(&fee)
 }
 
 /// Return true if the wallet balance is greater than 50.0 BTC.
@@ -81,7 +81,11 @@ pub fn add_utxo(mut utxos: Vec<Utxo>, new_utxo: Utxo) -> Vec<Utxo> {
 /// Find the first transaction with a fee greater than 0.005 BTC.
 pub fn find_high_fee(fee_list: &[f64]) -> Option<(usize, f64)> {
     // TODO: Iterate with enumerate and return the first (index, fee) where fee > 0.005
-    fee_list.iter().copied().enumerate().find(|&(_, fee)| fee > 0.005)
+    fee_list
+        .iter()
+        .copied()
+        .enumerate()
+        .find(|&(_, fee)| fee > 0.005)
 }
 
 /// Return basic wallet details as a tuple of (name, balance).
@@ -93,7 +97,10 @@ pub fn get_wallet_details() -> (String, f64) {
 /// Get the status of a transaction from the mempool or "not found".
 pub fn get_tx_status(tx_pool: &HashMap<String, String>, txid: &str) -> String {
     // TODO: Look up txid in tx_pool, returning the status or "not found"
-    tx_pool.get(txid).cloned().unwrap_or_else(|| "not found".to_string())
+    tx_pool
+        .get(txid)
+        .cloned()
+        .unwrap_or_else(|| "not found".to_string())
 }
 
 /// Destructure wallet_info and format a status string.
@@ -184,13 +191,12 @@ pub fn create_utxo(
 
 // Implement extract_tx_version function below
 pub fn extract_tx_version(raw_tx_hex: &str) -> Result<u32, String> {
-    let decoded = hex::decode(raw_tx_hex)
-        .map_err(|e| format!("Hex decode error: {}", e))?;
-    
+    let decoded = hex::decode(raw_tx_hex).map_err(|e| format!("Hex decode error: {}", e))?;
+
     if decoded.len() < 4 {
         return Err("Transaction data too short".to_string());
     }
-    
+
     let mut version_bytes = [0u8; 4];
     version_bytes.copy_from_slice(&decoded[0..4]);
     Ok(u32::from_le_bytes(version_bytes))
